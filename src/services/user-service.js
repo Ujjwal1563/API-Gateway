@@ -55,14 +55,17 @@ async function isAuthenticated(token) {
     }
     const response = Auth.verifyToken(token);
     const user = await userRepo.get(response.id);
-    if(!user){
+    if (!user) {
       throw new AppError("No User Found", StatusCodes.NOT_FOUND);
     }
     return user.id;
   } catch (error) {
     if (error instanceof AppError) throw error;
-    if(error.name == 'JsonWebTokenError'){
-         throw new AppError("Invalid Jwt Token", StatusCodes.BAD_REQUEST);
+    if (error.name == "JsonWebTokenError") {
+      throw new AppError("Invalid Jwt Token", StatusCodes.BAD_REQUEST);
+    }
+    if (error.name == "TokenExpiredError") {
+      throw new AppError("JWT token expired", StatusCodes.BAD_REQUEST);
     }
     throw error;
   }
@@ -71,5 +74,5 @@ async function isAuthenticated(token) {
 module.exports = {
   createUser,
   signin,
-  isAuthenticated
+  isAuthenticated,
 };
