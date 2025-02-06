@@ -2,7 +2,6 @@ const { StatusCodes } = require("http-status-codes");
 const { UserRepository } = require("../repositories");
 const AppError = require("../utils/errors/app-error");
 const { Auth } = require("../utils/common");
-const { checkPassword, createToken } = Auth;
 const bcrypt = require("bcrypt");
 const userRepo = new UserRepository();
 async function createUser(data) {
@@ -37,7 +36,7 @@ async function signin(data) {
         StatusCodes.NOT_FOUND
       );
     }
-    const passwordMatch = checkPassword(data.password, user.password);
+    const passwordMatch = Auth.checkPassword(data.password, user.password);
     if (!passwordMatch) {
       throw new AppError("Invalid Password", StatusCodes.BAD_REQUEST);
     }
@@ -49,7 +48,28 @@ async function signin(data) {
   }
 }
 
+async function isAuthenticated(token) {
+  try {
+    if (!token) {
+      throw new AppError("Missing Jwt Token", StatusCodes.BAD_REQUEST);
+    }
+    const response = Auth.verifyToken(token);
+    const user = await userRepo.get(response.id);
+    if(!user){
+      throw new AppError("No User Found", StatusCodes.NOT_FOUND);
+    }
+    return user.id;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    if(error.name == 'JsonWebTokenError'){
+         throw new AppError("Invalid Jwt Token", StatusCodes.BAD_REQUEST);
+    }
+    throw error;
+  }
+}
+
 module.exports = {
   createUser,
   signin,
+  isAuthenticated
 };
