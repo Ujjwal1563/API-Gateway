@@ -5,8 +5,8 @@ const { ServerConfig } = require("./config");
 const apiRoutes = require("./routes");
 
 const limiter = rateLimit({
-  windowMs: 2 * 60 * 1000, // 15 minutes
-  limit: 3, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
 });
 
 const app = express();
